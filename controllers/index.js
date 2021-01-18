@@ -22,23 +22,61 @@ const upload = async (req, res) => {
         .resize(500, 500)
         .toFile(`./public/${req.file.originalname.split('.')[0]}.webp`, (error, res) => {
             if (error) {
-                console.log('iimage conversion failed: ', error);
+                console.log('image conversion to webp failed: ', error);
             } else {
-                console.log('image conversion success', res);
+                console.log('image conversion to webp success', res);
             }
         });
         sharp(bufferImage)
         .resize(500, 500)
         .toFile(`./public/${req.file.originalname.split('.')[0]}.png`, (error, res) => {
             if (error) {
-                console.log('iimage conversion failed: ', error);
+                console.log('image conversion to webp failed: ', error);
             } else {
-                console.log('image conversion success', res);
+                console.log('image conversion to png success', res);
             }
         });
 
         res.status(200).send({
             message: "Uploaded the file successfully: " + req.file.originalname,
+        });
+    } catch (err) {
+        if (err.code == "LIMIT_FILE_SIZE") {
+            return res.status(500).send({
+              message: "File size cannot be larger than 2MB",
+            });
+          }
+        res.status(500).send({
+            message: `Could not upload the file: ${req.file.originalname}. ${err}`,
+        });
+    }
+};
+
+const uploadBase64 = async (req, res) => {
+    try {
+        
+        let bufferImage = Buffer.from(req.body.file, 'base64');
+        sharp(bufferImage)
+        .resize(500, 500)
+        .toFile(`./public/${req.body.name}.webp`, (error, res) => {
+            if (error) {
+                console.log('image conversion to webp failed: ', error);
+            } else {
+                console.log('image conversion to png success', res);
+            }
+        });
+        sharp(bufferImage)
+        .resize(500, 500)
+        .toFile(`./public/${req.body.name}.png`, (error, res) => {
+            if (error) {
+                console.log('image conversion to png failed: ', error);
+            } else {
+                console.log('image conversion to png success', res);
+            }
+        });
+
+        res.status(200).send({
+            message: "Uploaded the file successfully",
         });
     } catch (err) {
         if (err.code == "LIMIT_FILE_SIZE") {
@@ -92,4 +130,5 @@ module.exports = {
     upload,
     getListFiles,
     download,
+    uploadBase64
 };
